@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {SKYBLUE, GREEN, BLUE} from '../theme/colors';
+import {useStatusBar} from '../hook/useStatusBar';
 import {
   faSignature,
   faArrowLeft,
@@ -17,6 +18,7 @@ export const BannerEditMode = () => (
 );
 
 export const CancelEditMode = ({setIsEditable, setFilePath}) => {
+  const {height} = useStatusBar();
   return (
     <TouchableOpacity
       onPress={() => {
@@ -25,25 +27,27 @@ export const CancelEditMode = ({setIsEditable, setFilePath}) => {
           'https://firebasestorage.googleapis.com/v0/b/lrtbl-6858b.appspot.com/o/G%26S-RH-FO-02_REGISTRO%20DE%20INDUCCI%C3%93N%20G%26S_v01.pdf?alt=media&token=8f3402b1-590f-4ef9-9648-1cc5892cf7d1',
         );
       }}
-      style={styles.cancelEditMode}>
+      style={styles.cancelEditMode(height)}>
       <Text style={styles.cancelEditText}>Salir</Text>
     </TouchableOpacity>
   );
 };
 
 export const ConfirmEditMode = ({setIsEditable}) => {
+  const {height} = useStatusBar();
   return (
     <TouchableOpacity
       onPress={() => setIsEditable(false)}
-      style={styles.confirmEditMode}>
+      style={styles.confirmEditMode(height)}>
       <FontAwesomeIcon icon={faCheck} size={20} color="white" />
     </TouchableOpacity>
   );
 };
 
 export const BackScreen = () => {
+  const {height} = useStatusBar();
   return (
-    <TouchableOpacity style={styles.backScreen}>
+    <TouchableOpacity style={styles.backScreen(height)}>
       <FontAwesomeIcon icon={faArrowLeft} size={20} color="white" />
     </TouchableOpacity>
   );
@@ -83,39 +87,40 @@ const styles = StyleSheet.create({
   bannerEditText: {
     fontWeight: 'bold',
   },
-  cancelEditMode: {
+  cancelEditMode: height => ({
     position: 'absolute',
     backgroundColor: BLUE,
     left: 20,
     borderRadius: 15,
-    top: 20,
+    top: height + 20,
     padding: 7,
     paddingLeft: 12,
     paddingRight: 12,
-  },
-  confirmEditMode: {
+  }),
+  confirmEditMode: height => ({
     position: 'absolute',
     backgroundColor: GREEN,
     right: 20,
     borderRadius: 20,
-    top: 20,
+    top: height + 20,
     padding: 7,
-  },
+  }),
   cancelEditText: {
     color: 'white',
     fontWeight: 'bold',
   },
-  backScreen: {
+  backScreen: height => ({
     position: 'absolute',
     backgroundColor: BLUE,
     left: 20,
     borderRadius: 20,
-    top: 20,
+    top: height + 20,
     padding: 8,
-  },
+  }),
   optionsSign: {
     width: '100%',
     flexDirection: 'row',
+    paddingBottom: 20,
   },
   optionsSignText: {
     color: 'white',
@@ -129,6 +134,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingBottom: 23,
+    marginBottom: 30,
     width: '50%',
   },
 });
