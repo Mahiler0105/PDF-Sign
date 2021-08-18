@@ -36,6 +36,8 @@ target 'ProofOfConceptTasa' do
 
   pod 'RNFS', :path => '../node_modules/react-native-fs'
 
+  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
+
   target 'ProofOfConceptTasaTests' do
     inherit! :search_paths
     # Pods for testing
