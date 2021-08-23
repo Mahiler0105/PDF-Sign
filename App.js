@@ -30,6 +30,18 @@ const App = () => {
     return unsubscribe;
   }, []);
 
+  React.useEffect(() => {
+    messaging()
+      .getToken()
+      .then(token => {
+        console.log(token);
+      });
+
+    return messaging().onTokenRefresh(token => {
+      console.log('saved token', token);
+    });
+  }, []);
+
   return (
     <SafeAreaProvider>
       <Application />
