@@ -1,8 +1,17 @@
-platform :ios, '9.0'
+platform :ios, '11.0'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
 target 'ProofOfConceptTasa' do
   # Pods for ProofOfConceptTasa
+
+  use_native_modules!
+  
+  pod 'Firebase/Analytics'
+  pod 'RNNotificationBanner', :path => '../node_modules/react-native-notification-banner/ios'
+  
+  use_frameworks!
+  
+  pod 'BRYXBanner', :git => 'https://github.com/prscX/BRYXBanner.git', :branch => 'master'
   pod 'FBLazyVector', :path => "../node_modules/react-native/Libraries/FBLazyVector"
   pod 'FBReactNativeSpec', :path => "../node_modules/react-native/Libraries/FBReactNativeSpec"
   pod 'RCTRequired', :path => "../node_modules/react-native/Libraries/RCTRequired"
@@ -43,7 +52,18 @@ target 'ProofOfConceptTasa' do
     # Pods for testing
   end
 
-  use_native_modules!
+ 
+
+  post_install do |installer|
+    installer.pods_project.targets.each do |target|
+      if target.name.include?('BRYXBanner')
+        target.build_configurations.each do |config|
+          config.build_settings['SWIFT_VERSION'] = '4.2'
+        end
+      end
+    end
+  end
+
 end
 
 target 'ProofOfConceptTasa-tvOS' do

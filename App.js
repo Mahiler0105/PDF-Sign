@@ -24,7 +24,7 @@ const App = () => {
         titleColor: '#FFFFFF',
         subTitleColor: '#FFFFFF',
         isSwipeToDismissEnabled: true,
-        tintColor: '#eaa2a2',
+        tintColor: '#85a249',
       });
     });
     return unsubscribe;

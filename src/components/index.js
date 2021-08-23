@@ -17,15 +17,13 @@ export const BannerEditMode = () => (
   </View>
 );
 
-export const CancelEditMode = ({setIsEditable, setFilePath}) => {
+export const CancelEditMode = ({setIsEditable, setBase64ModifyFile}) => {
   const {height} = useStatusBar();
   return (
     <TouchableOpacity
       onPress={() => {
         setIsEditable(false);
-        setFilePath(
-          'https://firebasestorage.googleapis.com/v0/b/lrtbl-6858b.appspot.com/o/G%26S-RH-FO-02_REGISTRO%20DE%20INDUCCI%C3%93N%20G%26S_v01.pdf?alt=media&token=8f3402b1-590f-4ef9-9648-1cc5892cf7d1',
-        );
+        setBase64ModifyFile(null);
       }}
       style={styles.cancelEditMode(height)}>
       <Text style={styles.cancelEditText}>Salir</Text>

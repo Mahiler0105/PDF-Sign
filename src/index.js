@@ -2,9 +2,8 @@ import React from 'react';
 import {StyleSheet, Dimensions, Platform} from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import Pdf from 'react-native-pdf';
-const RNFS = require('react-native-fs');
 import {PDFDocument} from 'pdf-lib';
-import {_base64ToArrayBuffer, _uint8ToBase64} from './utils/convertBase64';
+import {_uint8ToBase64} from './utils/convertBase64';
 import {
   BackScreen,
   OptionsSign,
@@ -13,23 +12,12 @@ import {
   BannerEditMode,
 } from './components';
 
-const URL_PDF_FILE =
-  'https://firebasestorage.googleapis.com/v0/b/lrtbl-6858b.appspot.com/o/G%26S-RH-FO-02_REGISTRO%20DE%20INDUCCI%C3%93N%20G%26S_v01.pdf?alt=media&token=8f3402b1-590f-4ef9-9648-1cc5892cf7d1';
-const URL_SIGN_FILE =
-  'https://firebasestorage.googleapis.com/v0/b/lrtbl-6858b.appspot.com/o/CamScanner%2006-20-2021%2021.00-20210721-17.48.25.pdf?alt=media&token=2b8e65f0-fafa-49e0-a622-af379fd65544';
-
-const get_url_extension = url => {
-  return url
-    .split(/[#?]/)[0]
-    .split('.')
-    .pop()
-    .trim();
-};
-
 const PDFExample = () => {
   const {bottom} = useSafeAreaInsets();
-
+  const [numOfPage, setNumOfPage] = React.useState(1);
   const [isEditable, setIsEditable] = React.useState(false);
+  const [base64InitFile, setBase64InitFile] = React.useState(null);
+  const [base64ModifyFile, setBase64ModifyFile] = React.useState(null);
   const [pdfDimentions, setPdfDimentions] = React.useState({
     width: 0,
     height: 0,
@@ -39,66 +27,36 @@ const PDFExample = () => {
     x: 0,
     y: 0,
   });
-  const [filePath, setFilePath] = React.useState(URL_PDF_FILE);
-  const [pdfArrayBuffer, setPDFArrayBuffer] = React.useState(null);
-  const [pdfBase64, setPdfBase64] = React.useState(null);
-  const [signatureBase64, setSignatureBase64] = React.useState(null);
-  const [signatureArrayBuffer, setSignatureArrayBuffer] = React.useState(null);
-  const [newPdfSaved, setNewPdfSaved] = React.useState(false);
+
+  React.useEffect(() => {
+    const baseUrl = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
+    fetch(`http://${baseUrl}:3000/imageBase64`, {method: 'GET'})
+      .then(res => res.json())
+      .then(data => setBase64InitFile(data.data));
+  }, []);
 
   const handleSingleTap = async (page, x, y) => {
     if (isEditable) {
+      console.log('page:', page);
+      console.log('coordenadas:', x, y);
       setSignatureLocation({page, x, y});
-      const date = new Date();
-      const fileTitle = `footloose_${Math.floor(
-        date.getTime() + date.getSeconds() / 2,
-      )}.${get_url_extension(URL_PDF_FILE)}`;
+      const baseUrl = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
+      const signRes = await fetch(`http://${baseUrl}:3000/sign`, {
+        method: 'GET',
+      });
+      const {data: base64Sign} = await signRes.json();
 
-      RNFS.downloadFile({
-        fromUrl: URL_PDF_FILE,
-        toFile: `${RNFS.DocumentDirectoryPath}/${fileTitle}`,
-      })
-        .promise.then(_res => {
-          RNFS.readFile(
-            `${RNFS.DocumentDirectoryPath}/${fileTitle}`,
-            'base64',
-          ).then(contents => {
-            setPdfBase64(contents);
-            setPDFArrayBuffer(_base64ToArrayBuffer(contents));
-          });
-        })
-        .catch(err => console.log(err));
-
-      const signatureUrl =
-        'https://firebasestorage.googleapis.com/v0/b/lrtbl-6858b.appspot.com/o/firma_fer-removebg-preview.png?alt=media&token=ecb4c0a0-6c50-48b1-af5d-c8f2d880bc5b';
-      const fileTitle2 = `footloose_${Math.floor(
-        date.getTime() + date.getSeconds() / 2,
-      )}.${get_url_extension(signatureUrl)}`;
-
-      RNFS.downloadFile({
-        fromUrl: signatureUrl,
-        toFile: `${RNFS.DocumentDirectoryPath}/${fileTitle2}`,
-      })
-        .promise.then(_res => {
-          RNFS.readFile(
-            `${RNFS.DocumentDirectoryPath}/${fileTitle2}`,
-            'base64',
-          ).then(contents => {
-            setSignatureBase64(contents);
-            setSignatureArrayBuffer(_base64ToArrayBuffer(contents));
-          });
-        })
-        .catch(err => console.log(err));
-      const pdfDoc = await PDFDocument.load(pdfArrayBuffer);
+      const pdfDoc = await PDFDocument.load(base64InitFile);
       const pages = pdfDoc.getPages();
       const firstPage = pages[page - 1];
-      // The meat
-      const signatureImage = await pdfDoc.embedPng(signatureArrayBuffer);
+
+      const signatureImage = await pdfDoc.embedPng(base64Sign);
       if (Platform.OS === 'ios') {
+        const h = Dimensions.get('screen').height * 0.88 - bottom;
         firstPage.drawImage(signatureImage, {
-          x: (pdfDimentions.width * (x - 12)) / Dimensions.get('window').width,
-          y: pdfDimentions.height - (pdfDimentions.height * (y + 12)) / 540,
-          width: 50,
+          x: (pdfDimentions.width * x - 12) / Dimensions.get('window').width,
+          y: pdfDimentions.height - (pdfDimentions.height * (y + 12)) / h,
+          width: 80,
           height: 50,
         });
       } else {
@@ -108,33 +66,31 @@ const PDFExample = () => {
             firstPage.getHeight() -
             (firstPage.getHeight() * y) / pdfDimentions.height -
             25,
-          width: 50,
+          width: 80,
           height: 50,
         });
       }
-      // Play with these values as every project has different requirements
+
       const pdfBytes = await pdfDoc.save();
       const pdfBase64Original = _uint8ToBase64(pdfBytes);
-      const path = `${
-        RNFS.DocumentDirectoryPath
-      }/react-native_signed_${Date.now()}.pdf`;
-
-      RNFS.writeFile(path, pdfBase64Original, 'base64')
-        .then(success => {
-          setFilePath(path);
-          setNewPdfSaved(true);
-          setPdfBase64(pdfBase64Original);
-        })
-        .catch(err => {
-          console.log(err.message);
-        });
+      setNumOfPage(page);
+      setBase64ModifyFile('data:application/pdf;base64,' + pdfBase64Original);
     }
   };
 
   return (
     <SafeAreaView style={styles.container(bottom)}>
       <Pdf
-        source={{uri: filePath, cache: true}}
+        minScale={1.0}
+        maxScale={1.0}
+        scale={1.0}
+        usePDFKit={false}
+        page={numOfPage}
+        enablePaging={true}
+        source={{
+          uri: base64ModifyFile ? base64ModifyFile : base64InitFile,
+          cache: true,
+        }}
         onLoadComplete={(_numberOfPages, _filePath, {width, height}) =>
           setPdfDimentions({width, height})
         }
@@ -149,9 +105,13 @@ const PDFExample = () => {
         <>
           <CancelEditMode
             setIsEditable={setIsEditable}
-            setFilePath={setFilePath}
+            setBase64ModifyFile={setBase64ModifyFile}
           />
-          <ConfirmEditMode setIsEditable={setIsEditable} />
+          <ConfirmEditMode
+            setIsEditable={setIsEditable}
+            setBase64InitFile={setBase64InitFile}
+            base64ModifyFile={base64ModifyFile}
+          />
           <BannerEditMode />
         </>
       ) : (
