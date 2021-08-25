@@ -5,8 +5,24 @@ import messaging from '@react-native-firebase/messaging';
 import Application from './src/index';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+Icon.loadFont('AntDesign.ttf');
+Icon.loadFont('Entypo.ttf');
+Icon.loadFont('EvilIcons.ttf');
+Icon.loadFont('Feather.ttf');
+Icon.loadFont('FontAwesome.ttf');
+Icon.loadFont('FontAwesome5_Brands.ttf');
+Icon.loadFont('FontAwesome5_Regular.ttf');
+Icon.loadFont('FontAwesome5_Solid.ttf');
+Icon.loadFont('Foundation.ttf');
+Icon.loadFont('Ionicons.ttf');
+Icon.loadFont('MaterialIcons.ttf');
+Icon.loadFont('MaterialCommunityIcons.ttf');
+Icon.loadFont('SimpleLineIcons.ttf');
+Icon.loadFont('Octicons.ttf');
+Icon.loadFont('Zocial.ttf');
+
 let icon = (
-  <Icon family={'FontAwesome'} name={'edit'} color={'#000000'} size={30} />
+  <Icon family={'FontAwesome'} name={'edit'} color="#f2f2f2" size={30} />
 );
 
 const App = () => {
@@ -36,11 +52,18 @@ const App = () => {
       .then(token => {
         console.log(token);
       });
-
     return messaging().onTokenRefresh(token => {
       console.log('saved token', token);
     });
   }, []);
+
+  RNNotificationBanner.Warn({
+    title: 'Message',
+    subTitle: 'Sub Message',
+    titleColor: '#FFFFFF',
+    subTitleColor: '#FFFFFF',
+    isSwipeToDismissEnabled: true,
+  });
 
   return (
     <SafeAreaProvider>

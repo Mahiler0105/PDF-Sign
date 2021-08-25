@@ -1,7 +1,9 @@
 import React from 'react';
-import {StyleSheet, Dimensions, Platform} from 'react-native';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {StyleSheet, Dimensions, Platform, View, Text} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Pdf from 'react-native-pdf';
+import {Header} from 'react-native-elements';
+import {BLUE} from './theme/colors';
 import {PDFDocument} from 'pdf-lib';
 import {_uint8ToBase64} from './utils/convertBase64';
 import {
@@ -27,6 +29,7 @@ const PDFExample = () => {
     x: 0,
     y: 0,
   });
+  const [pagination, setPagination] = React.useState({total: 0, actual: 0});
 
   React.useEffect(() => {
     const baseUrl = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
@@ -52,16 +55,15 @@ const PDFExample = () => {
 
       const signatureImage = await pdfDoc.embedPng(base64Sign);
       if (Platform.OS === 'ios') {
-        const h = Dimensions.get('screen').height * 0.88 - bottom;
         firstPage.drawImage(signatureImage, {
           x: (pdfDimentions.width * x - 12) / Dimensions.get('window').width,
-          y: pdfDimentions.height - (pdfDimentions.height * (y + 12)) / h,
+          y: pdfDimentions.height - (pdfDimentions.height * (y + 12)) / 540,
           width: 80,
           height: 50,
         });
       } else {
         firstPage.drawImage(signatureImage, {
-          x: (firstPage.getWidth() * x) / pdfDimentions.width,
+          x: (firstPage.getWidth() * x) / pdfDimentions.width - 40,
           y:
             firstPage.getHeight() -
             (firstPage.getHeight() * y) / pdfDimentions.height -
@@ -79,51 +81,70 @@ const PDFExample = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container(bottom)}>
-      <Pdf
-        minScale={1.0}
-        maxScale={1.0}
-        scale={1.0}
-        usePDFKit={false}
-        page={numOfPage}
-        enablePaging={true}
-        source={{
-          uri: base64ModifyFile ? base64ModifyFile : base64InitFile,
-          cache: true,
-        }}
-        onLoadComplete={(_numberOfPages, _filePath, {width, height}) =>
-          setPdfDimentions({width, height})
-        }
-        onPageSingleTap={(page, x, y) => handleSingleTap(page, x, y)}
-        onError={error => {
-          console.log(error);
-        }}
-        style={styles.pdf(bottom)}
-      />
-
-      {isEditable ? (
-        <>
+    <View style={styles.container(bottom)}>
+      <Header
+        statusBarProps={{backgroundColor: BLUE}}
+        barStyle="light-content"
+        containerStyle={styles.containerHeader}>
+        {isEditable ? (
           <CancelEditMode
             setIsEditable={setIsEditable}
             setBase64ModifyFile={setBase64ModifyFile}
           />
+        ) : (
+          <BackScreen />
+        )}
+        <Text style={styles.titleHeader}>Formato de Inducción G&S</Text>
+        {isEditable && (
           <ConfirmEditMode
             setIsEditable={setIsEditable}
             setBase64InitFile={setBase64InitFile}
             base64ModifyFile={base64ModifyFile}
           />
-          <BannerEditMode />
-        </>
-      ) : (
-        <>
-          <BackScreen />
-          <OptionsSign
-            setIsEditable={setIsEditable}
-            signatureLocation={signatureLocation}
-          />
-        </>
+        )}
+      </Header>
+      {pdfDimentions.width !== 0 && (
+        <View style={styles.paginationContainer}>
+          <View style={styles.paginationView}>
+            <Text style={styles.paginationText}>
+              {pagination.actual} de {pagination.total}
+            </Text>
+          </View>
+        </View>
       )}
-    </SafeAreaView>
+      <View style={styles.container(bottom)}>
+        <Pdf
+          minScale={1.0}
+          maxScale={isEditable ? 1.0 : 3.0}
+          scale={1.0}
+          usePDFKit={false}
+          page={numOfPage}
+          style={styles.pdf}
+          enablePaging={true}
+          source={{
+            uri: base64ModifyFile ? base64ModifyFile : base64InitFile,
+            cache: true,
+          }}
+          onLoadComplete={(numberOfPages, _filePath, {width, height}) => {
+            setPdfDimentions({width, height});
+            setPagination({total: numberOfPages, actual: 1});
+          }}
+          onPageChanged={page => setPagination({...pagination, actual: page})}
+          onPageSingleTap={(page, x, y) => handleSingleTap(page, x, y)}
+          onError={error => {
+            console.log(error);
+          }}
+        />
+      </View>
+      {isEditable ? (
+        <BannerEditMode />
+      ) : (
+        <OptionsSign
+          setIsEditable={setIsEditable}
+          signatureLocation={signatureLocation}
+        />
+      )}
+    </View>
   );
 };
 
@@ -131,11 +152,40 @@ export default PDFExample;
 
 const styles = StyleSheet.create({
   container: bottom => ({
+    flex: 1,
     backgroundColor: '#f2f2f2',
+    justifyContent: 'center',
     marginBottom: bottom,
   }),
-  pdf: bottom => ({
+  pdf: {
+    backgroundColor: '#f2f2f2',
     width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height * 0.88 - bottom,
-  }),
+    height: 540,
+  },
+  containerHeader: {
+    paddingBottom: 15,
+    backgroundColor: BLUE,
+    paddingTop: 20,
+  },
+  titleHeader: {
+    color: '#fff',
+  },
+  paginationContainer: {
+    alignItems: 'flex-end',
+    marginTop: 10,
+    paddingRight: 15,
+  },
+  paginationView: {
+    backgroundColor: '#aab2b1',
+    borderRadius: 15,
+    paddingLeft: 7,
+    paddingRight: 7,
+    paddingTop: 2,
+    paddingBottom: 2,
+  },
+  paginationText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
 });

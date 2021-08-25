@@ -21,6 +21,7 @@
 		62550FC7045494028440D9CE /* libPods-ProofOfConceptTasa-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7E52E4DE52E3F71147AE76 /* libPods-ProofOfConceptTasa-tvOSTests.a */; };
 		A5BF4990D0DA8E4018C7F96D /* libPods-ProofOfConceptTasa-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 833C70ADA4345166A3E54FB7 /* libPods-ProofOfConceptTasa-tvOS.a */; };
 		E8C7238726D4319F00D855A6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E8C7238626D4319F00D855A6 /* GoogleService-Info.plist */; };
+		E8E488C726D69FCB00D7C170 /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 748CF05D6EEA45E78D6DDA05 /* MaterialIcons.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -381,6 +382,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E8E488C726D69FCB00D7C170 /* MaterialIcons.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 				E8C7238726D4319F00D855A6 /* GoogleService-Info.plist in Resources */,
@@ -417,7 +419,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh";
+			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
 		0A50582F7AA82003F0EB6345 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
